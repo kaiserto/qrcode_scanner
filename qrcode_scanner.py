@@ -26,27 +26,32 @@ CR_CODE = 40
 def qrcode_scanner(idVendor, idProduct):
 
     h = hid.device()
-    h.open(idVendor, idProduct)
-    __debug("Manufacturer: %s\n" % h.get_manufacturer_string())
-    __debug("Product: %s\n" % h.get_product_string())
-    __debug("Serial No: %s\n" % h.get_serial_number_string())
+    try:
+        h.open(idVendor, idProduct)
+        __debug("Manufacturer: %s\n" % h.get_manufacturer_string())
+        __debug("Product: %s\n" % h.get_product_string())
+        __debug("Serial No: %s\n" % h.get_serial_number_string())
 
-    qrcode_output = ''
-    CHARCODES = CHARCODES_LOWER
-    while True:
-        buffer = h.read(8)
-        for char_code in [item for item in buffer if item > 0]:
-            if char_code == CR_CODE:
-                h.close()
-                return qrcode_output
-            if char_code == SHIFT_CODE:
-                CHARCODES = CHARCODES_UPPER
-            else:
-                char = CHARCODES.get(char_code, '?')
-                if char == '?':
-                    __debug("Char code %u not found!\n" % char_code)
-                qrcode_output += char
-                CHARCODES = CHARCODES_LOWER
+        qrcode_output = ''
+        CHARCODES = CHARCODES_LOWER
+        while True:
+            buffer = h.read(8)
+            for char_code in [item for item in buffer if item > 0]:
+                if char_code == CR_CODE:
+                    return qrcode_output
+                if char_code == SHIFT_CODE:
+                    CHARCODES = CHARCODES_UPPER
+                else:
+                    char = CHARCODES.get(char_code, '?')
+                    if char == '?':
+                        __debug("Char code %u not found!\n" % char_code)
+                    qrcode_output += char
+                    CHARCODES = CHARCODES_LOWER
+    finally:
+        try:
+            h.close()
+        except:
+            pass
 
 def __debug(message):
     sys.stderr.write(message) if DEBUG else None
