@@ -24,7 +24,6 @@ SHIFT_CODE = 2
 CR_CODE = 40
 
 def qrcode_scanner(idVendor, idProduct):
-
     h = hid.device()
     try:
         h.open(idVendor, idProduct)
